@@ -65,7 +65,7 @@ def read_numerical_file(path, data_type, list_type):
         raise ValueError('Must specify either \'float\' or \'int\' as data_type')
     if list_type not in ('single', 'multiple'):
         raise ValueError('list type must be \'single\' or \'multiple\'')
-    fr = open(path, 'r')
+    fr = open(path, 'rb')
     if data_type == 'int':
         d_type = int
     elif data_type == 'float':
@@ -77,34 +77,3 @@ def read_numerical_file(path, data_type, list_type):
         data_list = [[d_type(y) for y in line.split()] for line in fr]
     fr.close()
     return data_list
-
-# def old_read_float_file(file_name, list_type='multiple'):
-#     ''' Read in a file of float numbers. If list_type is single then we just read everything into the same 
-#     list (e.g. if there's only 1 number a line). Otherwise separate sub-lists for each line.'''
-
-#     with open(file_name, 'r') as f:
-#         if list_type == 'single':
-#             ret_list = [float(x) for line in f for x in line.split()]
-#         elif list_type == 'multiple':
-#             ret_list = [[float(x) for x in line.split()] for line in f]
-#         else:
-#             print 'Unknown list type. Should be single or multiple'
-#     # print f.closed
-#     return ret_list
-
-
-# def old_read_int_file(file_name, list_type='multiple'):
-#     ''' Read in a file of int numbers. If list_type is single then we just read everything into the same 
-#     list (e.g. if there's only 1 number a line). Otherwise separate sub-lists for each line.
-#     Maybe merge with the above eventually.
-#     Also should test a bit'''
-
-#     with open(file_name, 'r') as f:
-#         if list_type == 'single':
-#             ret_list = [int(x) for line in f for x in line.split()]
-#         elif list_type == 'multiple':
-#             ret_list = [[int(x) for x in line.split()] for line in f]
-#         else:
-#             print 'Unknown list type. Should be single or multiple'
-#     # print f.closed
-#     return ret_list

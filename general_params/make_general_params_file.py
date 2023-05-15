@@ -9,7 +9,7 @@ from general_file_fns import save_pickle_file
 
 param_dict = {}
 # Some commonly used paths
-base_dir = './data'
+base_dir = './data/'
 # Location where Peyrache et al data is unzipped
 param_dict['raw_data_dir'] = base_dir + 'raw_data/'
 
@@ -34,4 +34,4 @@ param_dict['cols'] = {'REM': (0.392, 0.549, 0.0784),
     'measured': (0.3, 0.3, 0.3), 'fit': (0.490, 0.961, 0.961)}
 
 print(f"Saving params dict containing:\n{param_dict}")
-save_pickle_file(param_dict, 'general_params.pkl') # Changed from .p to .pkl
+save_pickle_file(param_dict, 'general_params/general_params.pkl') # Changed from .p to .pkl
