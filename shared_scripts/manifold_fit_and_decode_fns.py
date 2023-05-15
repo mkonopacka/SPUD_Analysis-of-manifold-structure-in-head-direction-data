@@ -4,7 +4,7 @@ Functions to fit a 1D piecewise linear spline to a pointcloud and use
 it to do decoding.
 '''
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 from pandas import cut
@@ -38,7 +38,7 @@ class PiecewiseLinearFit:
             kmeans = KMeans(n_clusters=self.nKnots, max_iter=300).fit(self.data_to_fit)
             return kmeans.cluster_centers_
         else:
-            print 'Unknown method'
+            print('Unknown method')
 
     def order_knots(self, knots, method='nearest'):
         '''Order the initial knots so that we can draw a curve through them. 

@@ -3,7 +3,7 @@ Fit the wake manifold and do decoding. This version runs multiple cross-validate
 tries and plots the distribution of decoding errors.
 '''
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 import sys, os 
@@ -46,8 +46,8 @@ else:
     nTests = 10
     train_frac = 0.8
 
-print('Session: %s, fit dim: %d, nKnots: %d, knot_order: %s, penalty: %s, nTests: %d, train_frac: %.2f'%(
-    session, fit_dim, nKnots, knot_order, penalty_type, nTests, train_frac))
+print(('Session: %s, fit dim: %d, nKnots: %d, knot_order: %s, penalty: %s, nTests: %d, train_frac: %.2f'%(
+    session, fit_dim, nKnots, knot_order, penalty_type, nTests, train_frac)))
 area = 'ADn'
 state = 'Wake'
 dt_kernel = 0.1
@@ -58,7 +58,7 @@ n_neighbors = 5
 
 run_dim_red_here = True
 if run_dim_red_here:
-    print 'Running initial dimensionality reduction'
+    print('Running initial dimensionality reduction')
     rate_params = {'dt' : dt_kernel, 'sigma' : sigma}
     dim_red_params = {'n_neighbors' : n_neighbors, 'target_dim' : fit_dim}
     desired_nSamples = 15000
@@ -92,7 +92,7 @@ fit_params = {'dalpha' : 0.005, 'knot_order' : knot_order,
 results = {}
 tic = time.time()
 k = (session, fit_dim, nKnots, knot_order, penalty_type, train_frac)
-print 'Fitting manifold'
+print('Fitting manifold')
 for curr_sample in range(nTests):
     curr_fit_params = dict(fit_params)
         
@@ -110,7 +110,7 @@ for curr_sample in range(nTests):
     else:
         results[k] = [[mse, curr_fit_result['fit_err'], 
             np.array(curr_fit_result['final_knots'])]]
-print 'Time ', time.time()-tic
+print('Time ', time.time()-tic)
 
 to_save = {'fit_results' : results, 'session' : session, 'area' : area, 'state' : state, 
     'embed_file' : embed_fname} 

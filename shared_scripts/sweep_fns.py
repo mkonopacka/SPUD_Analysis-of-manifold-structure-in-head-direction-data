@@ -2,7 +2,7 @@
 # Collection of functions to pull out sweeps vs. staying in place during
 # nREM
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 

@@ -8,7 +8,7 @@ a Gaussian kernel. The non-overlapping bins method is currently not being
 used (and won't work), but the option is here for historical reasons.
 '''
 
-from __future__ import division
+
 import numpy as np
 import sys, os
 
@@ -30,7 +30,7 @@ def get_rates_and_angles_by_interval(inp_data, params, smooth_type='kernel', jus
     if just_wake:
         states = ['Wake']
     else:
-        states = inp_data['state_times'].keys()
+        states = list(inp_data['state_times'].keys())
 
     out_data = {s: {} for s in states}
     out_data.update({'session': session, 'cells': cell_IDs})
@@ -38,18 +38,18 @@ def get_rates_and_angles_by_interval(inp_data, params, smooth_type='kernel', jus
     if smooth_type == 'kernel':
         out_data['params'] = params
     elif smooth_type == 'binned':
-        print 'This option is here for historical reasons. May add later'
+        print('This option is here for historical reasons. May add later')
         return False
         win_size = params
         out_data['win_size'] = win_size
     else:
-        print 'Unknown smoothing type'
+        print('Unknown smoothing type')
         return False
 
     for state in states:
         for i, tmp_interval in enumerate(inp_data['state_times'][state]):
             interval = tuple(tmp_interval)
-            print state, interval
+            print(state, interval)
             out_data[state][interval] = {}
             if smooth_type == 'kernel':
                 rate_times, rates, angle_times, angles = get_rates_angles_kernel_dict(
@@ -74,7 +74,7 @@ def get_rates_angles_kernel_dict(inp_data, params, interval):
     if params['method'] == 'gaussian':
         wind_fn = lambda mu, x: gaussian_wind_fn(mu, params['sigma'], x)
     else:
-        print 'Unknown windowing function'
+        print('Unknown windowing function')
 
     spike_times = inp_data['spike_times']
     angle_list = inp_data['angle_list']
@@ -83,14 +83,14 @@ def get_rates_angles_kernel_dict(inp_data, params, interval):
 
     bin_edges = np.arange(interval[0], interval[1], dt)
     time_vals = bin_edges[:-1] + (dt / 2.)
-    cell_IDs = spike_times.keys()
+    cell_IDs = list(spike_times.keys())
 
     # For each cell, pull out the appropriate spike times and compute rates
     interval_spike_times = {}
     rates = {}
 
     for y in cell_IDs:
-        print y
+        print(y)
         interval_spike_times[y] = [x for x in spike_times[y]
                                    if interval[0] <= x < interval[1]]
         rates[y] = get_kernel_sum(interval_spike_times[y], time_vals, wind_fn)

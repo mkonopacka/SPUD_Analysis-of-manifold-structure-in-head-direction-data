@@ -17,6 +17,7 @@ def load_file_from_pattern(file_pattern):
     return data, fname
 
 def load_pickle_file(filename):
+    print(f"Reading data from {filename}...")
     fr = open(filename, 'r')
     data = pickle.load(fr)
     fr.close()
@@ -26,13 +27,14 @@ def save_pickle_file(data, filename):
     fw = open(filename, 'w')
     pickle.dump(data, fw)
     fw.close()
+    print(f"Data saved to {filename}.")
     return 1
 
 def return_dir(input_dir):
     '''Makes the directory input_dir if it doesn't exist.
     Return input_dir.'''
     if not os.path.exists(input_dir):
-        print('Making %s'%input_dir)
+        print(('Making %s'%input_dir))
         os.makedirs(input_dir)
     return input_dir
 

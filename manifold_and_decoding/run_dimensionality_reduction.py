@@ -2,7 +2,7 @@
 Run dimensionality reduction on spike counts.
 '''
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 import sys, time, os, datetime
@@ -42,8 +42,8 @@ else:
     target_dim = 3
     desired_nSamples = 15000
 
-print('Session %s, condition %s, target_dim %d, desired_nSamples %d'%(session, condition,
-    target_dim, desired_nSamples))
+print(('Session %s, condition %s, target_dim %d, desired_nSamples %d'%(session, condition,
+    target_dim, desired_nSamples)))
 area = 'ADn'
 dt_kernel = 0.1
 sigma = 0.1 # Kernel width
@@ -68,9 +68,9 @@ if condition == 'solo':
 elif condition == 'joint':
     counts1, _ = session_rates.get_spike_matrix(state)
     counts2, _ = session_rates.get_spike_matrix(state2)
-    print('Counts for each ', len(counts1), len(counts2))
+    print(('Counts for each ', len(counts1), len(counts2)))
     nSamples = min(len(counts1), len(counts2), desired_nSamples)
-    print('nSamples = ', nSamples)
+    print(('nSamples = ', nSamples))
     sel1 = counts1[:nSamples]; sel2 = counts2[:nSamples]
     concat_counts = np.concatenate((sel1,sel2),0)
     proj = run_dim_red(concat_counts, params=dim_red_params, method=method)
@@ -80,7 +80,7 @@ elif condition == 'joint':
         session, area, sigma * 1000, dt_kernel * 1000, state, state2, method, target_dim,
         n_neighbors, sd)
 gff.save_pickle_file(to_save, dir_to_save + fname)
-print('Time ', time.time() - t0)
+print(('Time ', time.time() - t0))
 
 if to_plot:
     fig = plt.figure(figsize=(8,8))

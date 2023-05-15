@@ -2,7 +2,7 @@
 Functions to take raw data in the form of .ang, .pos, .clu, and .res files and output
 python-friendly data structures that gather all information together.'''
 
-from __future__ import division
+
 import numpy as np
 import sys
 import time
@@ -37,19 +37,19 @@ def match_spikes_to_cells(cluster_file_path, timing_file_path, verbose=True):
     tmp_clusters = gff.read_numerical_file(cluster_file_path, 'int', 'single')
     tmp_spikes = gff.read_numerical_file(timing_file_path, 'float', 'single')
     if verbose:
-        print 'Cluster file:', cluster_file_path, 'Timing file ', timing_file_path
+        print('Cluster file:', cluster_file_path, 'Timing file ', timing_file_path)
 
     # First line in cluster file is number of cells (with 0 corresponding to
     # artifacts and 1 to noise)
     nClusters = tmp_clusters[0]
     cluster_ids = list(tmp_clusters[1:])
     if nClusters <= 2:  # ony clusters are 0 and 1; so no cells
-        print 'No cells found'
+        print('No cells found')
         nCells = 0
         spike_times = []
         return nCells, spike_times
     if np.max(cluster_ids) != (nClusters - 1):  
-        print 'Clusters listed at beginning of file do not agree'
+        print('Clusters listed at beginning of file do not agree')
         nCells = np.nan
         spike_times = []
         return nCells, spike_times
@@ -77,8 +77,8 @@ def gather_session_spike_info(params, verbose=True):
     curr_data_path = params['data_path']
     file_tag = curr_data_path + session
     if verbose:
-        print 'Session: ', session
-        print curr_data_path
+        print('Session: ', session)
+        print(curr_data_path)
     # First store the times the animal was in each state in state_times
     state_file_base = file_tag + '.states.'
     state_names = ['Wake', 'REM', 'SWS']
@@ -113,7 +113,7 @@ def gather_session_spike_info(params, verbose=True):
         [fname for fname in glob.glob(curr_data_path + session + '.clu.*') if re.match(
         file_tag + '.clu.\\d+$', fname)])
     if verbose:
-        print 'Number of shanks =', nShanks
+        print('Number of shanks =', nShanks)
     nCells_per_shank = np.zeros(nShanks)
     
     # Store spike times as dict where keys are (shank, cell) and the values
@@ -123,7 +123,7 @@ def gather_session_spike_info(params, verbose=True):
 
     for pyth_shank_idx in range(nShanks):
         data_shank_idx = pyth_shank_idx + 1
-        print '\nAnalyzing shank', data_shank_idx
+        print('\nAnalyzing shank', data_shank_idx)
         cluster_file = file_tag + '.clu.' + str(data_shank_idx)
         timing_file = file_tag + '.res.' + str(data_shank_idx)
 
@@ -142,7 +142,7 @@ def gather_session_spike_info(params, verbose=True):
     # Check for shanks where the number of clusters doesn't equal number of listed cells
     wrong_count_shanks = np.sum(np.isnan(nCells_per_shank))
     if wrong_count_shanks and verbose:
-        print '\nThe number of shanks with wrong number of cells listed is', wrong_count_shanks
+        print('\nThe number of shanks with wrong number of cells listed is', wrong_count_shanks)
 
     # Gather up stuff and return it
     data_to_return = {'session' : session, 'state_times' : state_times, 'angle_list' : 

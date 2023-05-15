@@ -2,7 +2,7 @@
 Decode from saved fit 
 '''
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 import sys, os, glob

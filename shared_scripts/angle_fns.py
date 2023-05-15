@@ -3,7 +3,7 @@ Some general functions for computing angular differences and other useful things
 working with circular variables
 '''
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 

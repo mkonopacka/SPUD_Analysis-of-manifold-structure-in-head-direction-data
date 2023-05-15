@@ -1,7 +1,7 @@
 '''November 26th 2018
 Functions for dimensionality reduction.'''
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 from sklearn import decomposition, manifold

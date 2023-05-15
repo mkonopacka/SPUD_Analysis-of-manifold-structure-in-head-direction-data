@@ -2,7 +2,7 @@
 More interactive version of SPUD fitting.'''
 
 
-from __future__ import division
+
 import numpy as np
 import numpy.linalg as la
 import sys, os 
@@ -35,8 +35,8 @@ knot_order = 'wt_per_len'
 penalty_type = 'mult_len'
 train_frac = 0.8
 
-print('Session: %s, fit dim: %d, nKnots: %d, knot_order: %s, penalty: %s, train_frac: %.2f'%(
-    session, fit_dim, nKnots, knot_order, penalty_type, train_frac))
+print(('Session: %s, fit dim: %d, nKnots: %d, knot_order: %s, penalty: %s, train_frac: %.2f'%(
+    session, fit_dim, nKnots, knot_order, penalty_type, train_frac)))
 area = 'ADn'
 state = 'Wake'
 dt_kernel = 0.1
@@ -117,7 +117,7 @@ fit_results['tt'], fit_results['curve'] = fhf.get_curve_from_knots(
     fit_results['loop_final_knots'], 'eq_vel')
 
 fit_results['fit_err'] = fitter.saved_knots[0]['err']
-print 'Time ', time.time()-t0
+print('Time ', time.time()-t0)
 
 i0 = 0; i1 = 1; i2 = 2
 fig = plt.figure(figsize=(9,9))

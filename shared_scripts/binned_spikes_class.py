@@ -3,7 +3,7 @@ November 8th 2018
 Interface to the binned spike counts/rate estimates. 
 '''
 
-from __future__ import division
+
 import numpy as np
 import sys, os
 

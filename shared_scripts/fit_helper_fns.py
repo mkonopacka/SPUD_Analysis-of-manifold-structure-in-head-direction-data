@@ -2,7 +2,7 @@
 Various functions to help with the decoding.
 '''
 
-from __future__ import division
+
 import numpy as np
 from numpy import linalg as la
 from pandas import cut
@@ -52,7 +52,7 @@ def get_coord_bins_from_knots(knot_list):
     segment_lens = [la.norm(y - x) for x, y in zip(knot_list[:-1], knot_list[1:])]
     bin_right_edges = np.cumsum(segment_lens) / np.sum(segment_lens)
     if bin_right_edges[-1] < 1:
-        print 'Last one is <1, ', bin_right_edges[-1]
+        print('Last one is <1, ', bin_right_edges[-1])
         bin_right_edges[-1] = 1
     return np.concatenate(([0], bin_right_edges))
 
@@ -87,7 +87,7 @@ def get_curve_from_knots(knot_list, bin_type, dt=0.005):
         # to distance in embedding or neural space
         t_bins = get_coord_bins_from_knots(knot_list)
     else:
-        print 'Unknown bin type'
+        print('Unknown bin type')
         return np.nan
     curve = get_linear_interp_general(knot_list, t_bins, tt)
     return tt, curve

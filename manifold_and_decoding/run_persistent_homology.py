@@ -3,7 +3,7 @@ Use Ripser to get Betti bar codes from saved rates. If nCells > 10, dim reduce
 spike counts using Isomap. Threshold out low density points if thrsh is True.
 '''
 
-from __future__ import division
+
 import sys, os
 import time, datetime
 import numpy as np
@@ -49,7 +49,7 @@ d_idx = 10
 rate_params = {'dt': dt_kernel, 'sigma': sigma}
 
 # load the kernel spikes and smooth
-print('Session: %s, state: %s' % (session, state))
+print(('Session: %s, state: %s' % (session, state)))
 session_rates = spike_counts(session, rate_params, count_type='rate',
                              anat_region='ADn')
 rates_all = session_rates.get_spike_matrix(state)[0]
@@ -81,8 +81,8 @@ if thrsh:
     rad = np.percentile(dist, 1)
     neigh = neighbors.NearestNeighbors()
     neigh.fit(rates)
-    num_nbrs = np.array(map(len, neigh.radius_neighbors(X=rates, radius=rad,
-                        return_distance=False)))
+    num_nbrs = np.array(list(map(len, neigh.radius_neighbors(X=rates, radius=rad,
+                        return_distance=False))))
 
     # b) threshold out points with low density
     thrsh_prcnt = 20
