@@ -18,13 +18,13 @@ def load_file_from_pattern(file_pattern):
 
 def load_pickle_file(filename):
     print(f"Reading data from {filename}...")
-    fr = open(filename, 'r')
+    fr = open(filename, 'rb')
     data = pickle.load(fr)
     fr.close()
     return data
 
 def save_pickle_file(data, filename):
-    fw = open(filename, 'w')
+    fw = open(filename, 'wb')
     pickle.dump(data, fw)
     fw.close()
     print(f"Data saved to {filename}.")
