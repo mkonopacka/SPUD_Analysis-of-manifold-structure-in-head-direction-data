@@ -9,7 +9,7 @@ from general_file_fns import save_pickle_file
 
 param_dict = {}
 # Some commonly used paths
-base_dir = '/Users/rchaudhuri/data/2019_03_hd/'
+base_dir = './data'
 # Location where Peyrache et al data is unzipped
 param_dict['raw_data_dir'] = base_dir + 'raw_data/'
 
@@ -23,7 +23,7 @@ param_dict['processed_data_dir'] = base_dir + 'processed/'
 
 # Firing rates estimated by convolution with Gaussian kernel. Again, generated
 # by read_in_data/preprocess_raw_data.py and directory created if needed.
-param_dict['kernel_rates_dir'] = base_dir + 'analyses/2019_03_kernel_rates/'
+param_dict['kernel_rates_dir'] = base_dir + 'analyses/kernel_rates/'
 
 # Analyses and results will be saved under this directory (and loaded from here too).
 param_dict['results_dir'] = base_dir + 'analyses/'
