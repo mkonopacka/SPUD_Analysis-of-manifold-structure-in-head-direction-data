@@ -5,35 +5,59 @@
 - [this article](https://www.researchgate.net/publication/273064711_Internally_organized_mechanisms_of_the_head_direction_sense) describes how it was created from experiments with mice.
 
 ## My understanding of data collection method
-1. The data set contains recordings made from multiple anterior thalamic nuclei, mainly the antero-dorsal (AD) nucleus, and subicular areas, mainly the post-subiculum (PoS), in freely moving mice. Thalamic and subicular electrodes yielding high number of the so-called Head-Direction (HD) cells were likely to be located in the AD nucleus and the PoS, respectively. Electrode placement was confirmed by histology. 
-2. Data was obtained during 42 recording sessions and includes responses of 720 neurons in the thalamus and 357 neurons in the PoS (total 1077 neurons), in seven animals. The raw (broadband) data was recorded at 20KHz, simultaneously from 64 to 96 channels.
+### Spike sorting - creation of "clusters"
+http://www.scholarpedia.org/article/Spike_sorting#:~:text=Spike%20sorting%20is%20the%20grouping,activity%20of%20different%20putative%20neurons.
 
-## Organization of the data directory
-For `<mouse> = Mouse28-140313`:
-```
-<mouse>
-| <mouse>.ang        # angle file
-| <mouse>/clu.1      # something (12 files)
-| ...
-| <mouse>/clu.11
-| <mouse>.eeg        # EEG data
-| <mouse>.fet.1      # dont know
-| ...
-| <mouse>.fet.11
-| <mouse>.pos        # dont know
-| <mouse>.res.1      # same
-| ...
-| <mouse>.res.11
-| <mouse>.spk.1      # spikes data
-| ...
-| <mouse>.spk.11
-| <mouse>.states.REM # ?
-| <mouse>.states.Wake
-| <mouse>.whl
-| <mouse>.xml
-```
+![image](images/spike_sorting.jpg)
+
+## What's inside the raw data directory
+Note: `<n>` indicates id of shank (physical element of used electrode, one electrode has multiple shanks) that measured given signal and `<mouse>` is the name of session, like `Mouse28-140313`:
+
+- `<mouse>.ang`: changes of physically measured angle over time
+- `<mouse>/clu.<n>`: text file of cluster identities. The first number – total number of clusters, where cluster with index 0 represents artifacts, 1 – noise/nonclusterable units, 2 and above – isolated units.
+- `<mouse>.eeg`: local field potential data downsampled to 1250Hz
+- `<mouse>.fet.<n>`: features array of spike waveform including:
+    - total number of dimensions in the feature space. Typically, for each channel there are 3 PCAs, and on top of this there are 3 features coding peak-to-trough, peak-tobaseline and trough-to-baseline of the spike on the channel of largest amplitude,
+    - spike width 
+    - time of the spike (identical to `<mouse>.res.<n>`.)
+- `<mouse>.pos`: ?
+- `<mouse>.res.<n>`: test file containing spike timestamps.  The time stamps are in samples at 20kHz sampling rate.
+- `<mouse>.spk.<n>`: binary file of spike waveshape. The waveshape of each spike across channels are written consecutively in the multiplexed form as in .dat file. The width of each spike is 32 samples, with sample #15 being the trough of spike.
+- `<mouse>.states.REM`: ?
+- `<mouse>.states.Wake`: ?
+- `<mouse>.whl`: text file of the position of the animal extracted from the video file. Each row is a frame in the movie. Sampling rate 39.06 Hz. The samples are synchronized with the electrophysiology. First two columns code for (x,y) coordinates, respectively, of the first LED, last two – of the second. -1 means
+adequate tracking was not possible for these frames.
+- `<mouse>.xml`: technical configuration file associated with session
 
 ## Summary of what I've done with dataset and public repo code
 1. Converted all scripts for use with python3
 2. Did setup described in README (params, processing of raw data)
 3. 
+
+## What each script / file does:
+- `general_params/`:
+    - `area_shank_info.pkl`
+    - `general_params.pkl`: config file created by running `make_general_params_file.py`
+    - `make_general_params_file.py`: running this script creates `general_params.pkl`, which should be done at the beginning of workflow
+- `manifold_and_decoding/`:
+    - `decode_from_saved_fit.py`
+    - `run_dimensionality_reduction.py`
+    - `run_persistent_homology.py`
+    - `run_spud_interactive.py`
+    - `run_spud_multiple_tests.py`
+- `read_in_data/`:
+    - `data_read_fns.py`
+    - `preprocess_raw_data.py`: running this script creates two new pickle files containing processed data
+    - `rate_functions.py`
+- `shared_scripts/`:
+    - `angle_fns.py`
+    - `binned_spikes_class.py`
+    - `dim_red_fns.py`
+    - `distribution_fns.py`
+    - `fit_helper_fns.py`
+    - `general_file_fns.py`
+    - `manifold_fit_and_decode_fns.py`
+    - `sweep_fns.py`
+
+## Order of execution
+TODO
