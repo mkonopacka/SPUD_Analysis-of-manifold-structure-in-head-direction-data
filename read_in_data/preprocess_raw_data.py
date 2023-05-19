@@ -46,6 +46,6 @@ if make_rates:
     rates = rf.get_rates_and_angles_by_interval(inp_data, params, smooth_type='kernel',
         just_wake=True)
     save_dir = gff.return_dir(gen_params['kernel_rates_dir'] + '%0.0fms_sigma/'%(sigma*1000))
-    gff.save_pickle_file(rates, save_dir + f"{session}_kernel_rates.pkl") # changed to pkl
+    gff.save_pickle_file(rates, save_dir + f"{session}.pkl") # changed to pkl
     print(f"Time: {time.time() - t0}s")
 

@@ -4,11 +4,20 @@
 - data download [here](https://crcns.org/data-sets/thalamus/th-1/about-th-1.) 
 - [this article](https://www.researchgate.net/publication/273064711_Internally_organized_mechanisms_of_the_head_direction_sense) describes how it was created from experiments with mice.
 
-## My understanding of data collection method
+## My understanding of used data collection and preprocessing methods
 ### Spike sorting - creation of "clusters"
-http://www.scholarpedia.org/article/Spike_sorting#:~:text=Spike%20sorting%20is%20the%20grouping,activity%20of%20different%20putative%20neurons.
+Extracellular recordings are usually done by inserting microwires in the brain. The signal from the microwire is amplified and band-pass filtered and the firing of the nearby neurons appears as spikes on top of background activity. Spikes are detected using an amplitude threshold and then sorted according to their shapes. For neurons close to the electrode tip -about 50 to 100 microns (Gerstein and Clark, 1964; Buzsaki, 2004)- the signal-to-noise ratio is good enough to distinguish the activity of each single unit (inner circle). For more distant neurons (outer circle) -up to about 150 microns- spikes can be detected but the difference in their shapes is masked by the noise (multi-unit activity). Spikes from neurons further apart cannot be detected and they contribute to the background noise activity.
 
-![image](images/spike_sorting.jpg)
+[Spike sorting](http://www.scholarpedia.org/article/Spike_sorting#:~:text=Spike%20sorting%20is%20the%20grouping,activity%20of%20different%20putative%20neurons) is the grouping of spikes into clusters based on the similarity of their shapes. Given that, in principle, each neuron tends to fire spikes of a particular shape, the resulting clusters correspond to the activity of different putative neurons. The end result of spike sorting is the determination of which spike corresponds to which of these neurons.
+
+![image](images/spike_sorting.jpg) ![image](images/spike_detection.jpg)
+
+### ISOMAP - dimensionality reduction technique
+In `run_spud_multiple_tests.py` they use ISOMAP implementation from sklearn https://scikit-learn.org/stable/modules/generated/sklearn.manifold.Isomap.html.
+
+https://www.youtube.com/watch?v=Xu_3NnkAI9s&ab_channel=AppliedAlgebraicTopologyNetwork
+
+
 
 ## What's inside the raw data directory
 Note: `<n>` indicates id of shank (physical element of used electrode, one electrode has multiple shanks) that measured given signal and `<mouse>` is the name of session, like `Mouse28-140313`:
@@ -29,14 +38,15 @@ Note: `<n>` indicates id of shank (physical element of used electrode, one elect
 adequate tracking was not possible for these frames.
 - `<mouse>.xml`: technical configuration file associated with session
 
-## Summary of what I've done with dataset and public repo code
+## Summary of what I've done so far with dataset and public repo code
 1. Converted all scripts for use with python3
 2. Did setup described in README (params, processing of raw data)
-3. 
+3. Read an article about spike sorting (part of data preprocessing)
+4. ... run_spud_multiple_tests.py
 
 ## What each script / file does:
 - `general_params/`:
-    - `area_shank_info.pkl`
+    - `area_shank_info.pkl`: contains dict where keys are session names (like `"Mouse17-130320"`) and values are maps from brain region (like `ADn`) to list of shank ids in it (like `[1, 2]`)
     - `general_params.pkl`: config file created by running `make_general_params_file.py`
     - `make_general_params_file.py`: running this script creates `general_params.pkl`, which should be done at the beginning of workflow
 - `manifold_and_decoding/`:
@@ -46,7 +56,7 @@ adequate tracking was not possible for these frames.
     - `run_spud_interactive.py`
     - `run_spud_multiple_tests.py`
 - `read_in_data/`:
-    - `data_read_fns.py`
+    - `data_read_fns.py`: utlitity functions for reading data from files
     - `preprocess_raw_data.py`: running this script creates two new pickle files containing processed data
     - `rate_functions.py`
 - `shared_scripts/`:

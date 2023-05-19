@@ -2,33 +2,39 @@
 Fit the wake manifold and do decoding. This version runs multiple cross-validated
 tries and plots the distribution of decoding errors.
 '''
-
-
+# General imports
 import numpy as np
 import numpy.linalg as la
 import sys, os 
 import time, datetime
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-# from sklearn import decomposition, manifold
 
-sd=int((time.time()%1)*(2**31))
-np.random.seed(sd)
-curr_date=datetime.datetime.now().strftime('%Y_%m_%d')+'_'
-
-gen_fn_dir = os.path.abspath('..') + '/shared_scripts'
+# Import shared modules
+gen_fn_dir = os.path.abspath('.') + '/shared_scripts'
 sys.path.append(gen_fn_dir)
-
 import general_file_fns as gff
-gen_params = gff.load_pickle_file('../general_params/general_params.p')
-
 from binned_spikes_class import spike_counts
 from dim_red_fns import run_dim_red
 import manifold_fit_and_decode_fns as mff
 
-dir_to_save = gff.return_dir(gen_params['results_dir'] + '2019_06_03_curve_fits/')
+# Set random seed
+sd = int((time.time()%1)*(2**31))
+np.random.seed(sd)
+print(f"Running run_spud_multiple_tests.py with random seed {sd} -----------------------------------")
 
+# Load and print general params and create directory to load dimensionality reduction results if needed
+gen_params = gff.load_pickle_file('./general_params/general_params.pkl')
+dim_red_dir = gen_params['results_dir'] + 'dim_red/'
+
+# Get current date and create directory to save results
+curr_date = datetime.datetime.now().strftime('%Y_%m_%d')+'_'
+dir_to_save = gff.return_dir(gen_params['results_dir'] + curr_date + '_curve_fits/')
+
+# Set up command line or default parameters
 cmd_line = False
+run_dim_red_here = True # run dimensionality reduction
+
 if cmd_line:
     session = sys.argv[1]
     fit_dim = int(sys.argv[2])
@@ -46,38 +52,38 @@ else:
     nTests = 10
     train_frac = 0.8
 
-print(('Session: %s, fit dim: %d, nKnots: %d, knot_order: %s, penalty: %s, nTests: %d, train_frac: %.2f'%(
-    session, fit_dim, nKnots, knot_order, penalty_type, nTests, train_frac)))
 area = 'ADn'
 state = 'Wake'
 dt_kernel = 0.1
-sigma = 0.1 # Kernel width
+sigma = 0.1     # Kernel width
+method = 'iso'  # Dimensionality reduction method, `iso` stands for isomap
+n_neighbors = 5 # Number of neighbors for isomap
 
-method = 'iso'
-n_neighbors = 5
+# Print parameters
+print(('Session: %s, fit dim: %d, nKnots: %d, knot_order: %s, penalty: %s, nTests: %d, train_frac: %.2f'%(
+    session, fit_dim, nKnots, knot_order, penalty_type, nTests, train_frac)))
 
-run_dim_red_here = True
+# Run dimensionality reduction if needed
 if run_dim_red_here:
-    print('Running initial dimensionality reduction')
+    print('Running initial dimensionality reduction...')
     rate_params = {'dt' : dt_kernel, 'sigma' : sigma}
     dim_red_params = {'n_neighbors' : n_neighbors, 'target_dim' : fit_dim}
     desired_nSamples = 15000
 
-    session_rates = spike_counts(session, rate_params, count_type='rate', 
-        anat_region='ADn')
+    # Use spike_counts class
+    session_rates = spike_counts(session, rate_params, count_type='rate', anat_region=area) # for ADn there are 21 cell ids
     counts, tmp_angles = session_rates.get_spike_matrix(state)
-    sel_counts = counts[:desired_nSamples]
-    proj = run_dim_red(sel_counts, params=dim_red_params, method=method)
-    embed = {state : proj, 'meas_angles' : tmp_angles[:desired_nSamples]}
+    plt.plot(counts)
+    plt.show()
+    selected_counts = counts[:desired_nSamples]
+    # Run dimensionality reduction
+    projection = run_dim_red(selected_counts, params = dim_red_params, method = method)
+    embed = {state : projection, 'meas_angles' : tmp_angles[:desired_nSamples]}
     embed_fname = 'not_saved'
 else:
-    # Put in your directory here
-    load_dir = gen_params['results_dir'] + '2019_03_22_dim_red/'
-    file_pattern = '%s_%s_kern_%dms_sigma_%dms_binsep_%s_embed_%s_%ddims_%dneighbors_*.p'%(
+    file_pattern = '%s_%s_kern_%dms_sigma_%dms_binsep_%s_embed_%s_%ddims_%dneighbors_*.pkl'%(
         session, area, sigma * 1000, dt_kernel * 1000, state, method, fit_dim, n_neighbors)
-    # file_pattern = '%s_%s_kern_%dms_sigma_%dms_binsep_%s_embed_%s_multi_dim_%dneighbors_*.p'%(
-    #     session, area, sigma * 1000, dt_kernel * 1000, state, method, n_neighbors)
-    embed, embed_fname = gff.load_file_from_pattern(load_dir+file_pattern)
+    embed, embed_fname = gff.load_file_from_pattern(dim_red_dir+file_pattern)
 
 curr_mani = embed[state]
 nPoints = len(curr_mani)
@@ -85,9 +91,7 @@ nTrain = np.round(train_frac * nPoints).astype(int)
 
 # Use measured angles to set origin and direction of coordinate increase
 ref_angles = embed['meas_angles']
-
-fit_params = {'dalpha' : 0.005, 'knot_order' : knot_order,
-    'penalty_type' : penalty_type, 'nKnots' : nKnots}
+fit_params = {'dalpha' : 0.005, 'knot_order' : knot_order, 'penalty_type' : penalty_type, 'nKnots' : nKnots}
 
 results = {}
 tic = time.time()
@@ -114,7 +118,7 @@ print('Time ', time.time()-tic)
 
 to_save = {'fit_results' : results, 'session' : session, 'area' : area, 'state' : state, 
     'embed_file' : embed_fname} 
-gff.save_pickle_file(to_save, dir_to_save + '%s_%s_dim%d_trainfrac%.2f_decode_errors_sd%d.p'%(
+gff.save_pickle_file(to_save, dir_to_save + '%s_%s_dim%d_trainfrac%.2f_decode_errors_sd%d.pkl'%(
     session, state, fit_dim, train_frac, sd))
 
 rmse_to_plot = np.sqrt([x[0] for x in results[k]])
