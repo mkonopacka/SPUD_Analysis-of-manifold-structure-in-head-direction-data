@@ -15,8 +15,9 @@ Extracellular recordings are usually done by inserting microwires in the brain. 
 ### ISOMAP - dimensionality reduction technique
 In `run_spud_multiple_tests.py` they use ISOMAP implementation from sklearn https://scikit-learn.org/stable/modules/generated/sklearn.manifold.Isomap.html.
 
-https://www.youtube.com/watch?v=Xu_3NnkAI9s&ab_channel=AppliedAlgebraicTopologyNetwork
+YT video: https://www.youtube.com/watch?v=Xu_3NnkAI9s&ab_channel=AppliedAlgebraicTopologyNetwork
 
+Isomap is a nonlinear dimensionality reduction method. It is one of several widely used low-dimensional embedding methods. [1] Isomap is used for computing a quasi-isometric, low-dimensional embedding of a set of high-dimensional data points. The algorithm provides a simple method for estimating the intrinsic geometry of a data manifold based on a rough estimate of each data point’s neighbors on the manifold. Isomap is highly efficient and generally applicable to a broad range of data sources and dimensionalities.
 
 
 ## What's inside the raw data directory
@@ -69,5 +70,6 @@ adequate tracking was not possible for these frames.
     - `manifold_fit_and_decode_fns.py`
     - `sweep_fns.py`
 
-## Order of execution
-TODO
+## Order of execution - what are the steps of the workflow
+1. raw data is converted to pickle files containing processed data
+2. Isomap dimensionality reduction is performed on processed data - now we have points in 3D space(?)

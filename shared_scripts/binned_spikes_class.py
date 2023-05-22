@@ -38,7 +38,7 @@ class spike_counts:
         if count_type == 'binned':
             bw = params['binwidth']
             spike_data_path = f"{gen_params['spike_counts_dir']}{bw * 1000:.0f}ms/{session_id}_{bw * 1000:.0f}ms.pkl"
-        
+
         elif count_type == 'rate':
             sigma = params['sigma']
             dt = params['dt']
@@ -60,7 +60,7 @@ class spike_counts:
         self.params = params
 
         # Filter by anatomical region if necessary
-        if anat_region is not 'all':
+        if anat_region != 'all':
             area_info = load_pickle_file('./general_params/area_shank_info.pkl')
             relevant_shanks = area_info[session_id][anat_region]
             relevant_cells = [id for id in self.cell_ids if id[0] in relevant_shanks] # TODO shouldn't it be id[1]? There are no cells with shank 10
@@ -110,14 +110,20 @@ class spike_counts:
             all_angles = np.append(all_angles, curr_angles)
         return spike_counts, all_angles
 
-    def get_spike_matrix(self, state, interval_num = 'all') -> np.ndarray:
+    def get_spike_matrix(self, state: str, interval_num = 'all') -> tuple:
+        """Get spike counts/rates for a single interval or concatenated across all intervals.
+        
+        Returns:
+            count_matrix: np.array of shape (num_cells, num_timepoints)
+            angles: np.array of shape (num_timepoints,)
+        """
         if interval_num != 'all':
             # single interval
             interval_bounds, spike_counts, angles = self.single_intvl_dict(state, interval_num)
         else:
             # concatenate
             spike_counts, angles = self.all_intvl_dict(state)
-        
+        # TODO why somewhere it is a list instead of np.array?
         count_matrix = np.array([spike_counts[cell] for cell in self.cell_ids]).T
         
         if interval_num != 'all':

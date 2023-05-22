@@ -25,7 +25,7 @@ print(f"Running run_spud_multiple_tests.py with random seed {sd} ---------------
 
 # Load and print general params and create directory to load dimensionality reduction results if needed
 gen_params = gff.load_pickle_file('./general_params/general_params.pkl')
-dim_red_dir = gen_params['results_dir'] + 'dim_red/'
+print(f"General params used for this session:\n{gen_params}")
 
 # Get current date and create directory to save results
 curr_date = datetime.datetime.now().strftime('%Y_%m_%d')+'_'
@@ -33,7 +33,10 @@ dir_to_save = gff.return_dir(gen_params['results_dir'] + curr_date + '_curve_fit
 
 # Set up command line or default parameters
 cmd_line = False
-run_dim_red_here = True # run dimensionality reduction
+run_dim_red_here = True # run dimensionality reduction, if False loads from `dim_red_dir`
+dim_red_dir = gen_params['results_dir'] + 'dim_red/'
+plot_projected_points = True
+plot_path = f"./figures/"
 
 if cmd_line:
     session = sys.argv[1]
@@ -43,6 +46,7 @@ if cmd_line:
     penalty_type = sys.argv[5]
     nTests = int(sys.argv[6])
     train_frac = float(sys.argv[7])
+# TODO describe the parameters
 else:
     session = 'Mouse28-140313'
     fit_dim = 3
@@ -52,9 +56,9 @@ else:
     nTests = 10
     train_frac = 0.8
 
-area = 'ADn'
-state = 'Wake'
-dt_kernel = 0.1
+area = 'ADn'    # Anatomical region to use
+state = 'Wake'  # Sleep stage to use
+dt_kernel = 0.1 # Kernel time step(?)
 sigma = 0.1     # Kernel width
 method = 'iso'  # Dimensionality reduction method, `iso` stands for isomap
 n_neighbors = 5 # Number of neighbors for isomap
@@ -69,28 +73,39 @@ if run_dim_red_here:
     rate_params = {'dt' : dt_kernel, 'sigma' : sigma}
     dim_red_params = {'n_neighbors' : n_neighbors, 'target_dim' : fit_dim}
     desired_nSamples = 15000
-
-    # Use spike_counts class
+    # Get counts from spike_counts interface
     session_rates = spike_counts(session, rate_params, count_type='rate', anat_region=area) # for ADn there are 21 cell ids
     counts, tmp_angles = session_rates.get_spike_matrix(state)
-    plt.plot(counts)
-    plt.show()
     selected_counts = counts[:desired_nSamples]
-    # Run dimensionality reduction
+    # Run dimensionality reduction and save projected points for later
     projection = run_dim_red(selected_counts, params = dim_red_params, method = method)
-    embed = {state : projection, 'meas_angles' : tmp_angles[:desired_nSamples]}
-    embed_fname = 'not_saved'
-else:
-    file_pattern = '%s_%s_kern_%dms_sigma_%dms_binsep_%s_embed_%s_%ddims_%dneighbors_*.pkl'%(
-        session, area, sigma * 1000, dt_kernel * 1000, state, method, fit_dim, n_neighbors)
-    embed, embed_fname = gff.load_file_from_pattern(dim_red_dir+file_pattern)
+    np.save(dim_red_dir + f"{session}_{state}_{method}_{dim_red_params['target_dim']}_projection_{curr_date}.pkl", projection)
+    assert projection.shape == (desired_nSamples, fit_dim)
+    # If plot_projected_points, plot projection in 3d and save to file
+    if plot_projected_points and fit_dim == 3:
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        sc = ax.scatter(projection[:, 0], projection[:, 1], projection[:, 2], alpha=0.5)
+        ax.set_title('Projection of %s %s data onto first two isomap dimensions'%(session, state))
+        plt.colorbar(sc)
+        plot_filename = plot_path + f"{session}_{state}_{method}_{dim_red_params['target_dim']}_projection_{curr_date}.png"
+        plt.savefig(plot_filename)
 
-curr_mani = embed[state]
+    # Create embeddings dictionary
+    embeddings = {state : projection, 'meas_angles' : tmp_angles[:desired_nSamples]}
+    embeddings_fname = 'not_saved'
+# If not running dimensionality reduction, load embeddings from file with specified pattern
+else:
+    file_pattern = '%s_%s_kern_%dms_sigma_%dms_binsep_%s_embeddings_%s_%ddims_%dneighbors_*.pkl'%(
+        session, area, sigma * 1000, dt_kernel * 1000, state, method, fit_dim, n_neighbors)
+    embeddings, embeddings_fname = gff.load_file_from_pattern(dim_red_dir+file_pattern)
+
+curr_mani = embeddings[state]
 nPoints = len(curr_mani)
 nTrain = np.round(train_frac * nPoints).astype(int)
 
 # Use measured angles to set origin and direction of coordinate increase
-ref_angles = embed['meas_angles']
+ref_angles = embeddings['meas_angles']
 fit_params = {'dalpha' : 0.005, 'knot_order' : knot_order, 'penalty_type' : penalty_type, 'nKnots' : nKnots}
 
 results = {}
@@ -117,7 +132,7 @@ for curr_sample in range(nTests):
 print('Time ', time.time()-tic)
 
 to_save = {'fit_results' : results, 'session' : session, 'area' : area, 'state' : state, 
-    'embed_file' : embed_fname} 
+    'embeddings_file' : embeddings_fname} 
 gff.save_pickle_file(to_save, dir_to_save + '%s_%s_dim%d_trainfrac%.2f_decode_errors_sd%d.pkl'%(
     session, state, fit_dim, train_frac, sd))
 
