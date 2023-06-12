@@ -34,9 +34,9 @@ dir_to_save = gff.return_dir(gen_params['results_dir'] + curr_date + '_curve_fit
 # Set up command line or default parameters
 cmd_line = False
 run_dim_red_here = True # run dimensionality reduction, if False loads from `dim_red_dir`
-dim_red_dir = gen_params['results_dir'] + 'dim_red/'
+dim_red_dir = gff.return_dir(gen_params['results_dir'] + 'dim_red/')
 plot_projected_points = True
-plot_path = f"./figures/"
+plot_path = gff.return_dir(f"./figures/")
 
 if cmd_line:
     session = sys.argv[1]
@@ -73,21 +73,23 @@ if run_dim_red_here:
     rate_params = {'dt' : dt_kernel, 'sigma' : sigma}
     dim_red_params = {'n_neighbors' : n_neighbors, 'target_dim' : fit_dim}
     desired_nSamples = 15000
+
     # Get counts from spike_counts interface
     session_rates = spike_counts(session, rate_params, count_type='rate', anat_region=area) # for ADn there are 21 cell ids
     counts, tmp_angles = session_rates.get_spike_matrix(state)
     selected_counts = counts[:desired_nSamples]
+
     # Run dimensionality reduction and save projected points for later
     projection = run_dim_red(selected_counts, params = dim_red_params, method = method)
     np.save(dim_red_dir + f"{session}_{state}_{method}_{dim_red_params['target_dim']}_projection_{curr_date}.pkl", projection)
     assert projection.shape == (desired_nSamples, fit_dim)
+
     # If plot_projected_points, plot projection in 3d and save to file
     if plot_projected_points and fit_dim == 3:
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
         sc = ax.scatter(projection[:, 0], projection[:, 1], projection[:, 2], alpha=0.5)
-        ax.set_title('Projection of %s %s data onto first two isomap dimensions'%(session, state))
-        plt.colorbar(sc)
+        ax.set_title('Projection of %s %s data onto first 3 isomap dimensions'%(session, state))
         plot_filename = plot_path + f"{session}_{state}_{method}_{dim_red_params['target_dim']}_projection_{curr_date}.png"
         plt.savefig(plot_filename)
 
@@ -100,8 +102,9 @@ else:
         session, area, sigma * 1000, dt_kernel * 1000, state, method, fit_dim, n_neighbors)
     embeddings, embeddings_fname = gff.load_file_from_pattern(dim_red_dir+file_pattern)
 
-curr_mani = embeddings[state]
-nPoints = len(curr_mani)
+# ---------------------------------------------------------------------------------------------------------------
+current_manifold = embeddings[state]
+nPoints = len(current_manifold)
 nTrain = np.round(train_frac * nPoints).astype(int)
 
 # Use measured angles to set origin and direction of coordinate increase
@@ -117,8 +120,8 @@ for curr_sample in range(nTests):
         
     train_idx = np.random.choice(nPoints, size=nTrain, replace=False)
     test_idx = np.array([idx for idx in range(nPoints) if idx not in train_idx])
-    data_to_fit = curr_mani[train_idx].copy()
-    data_to_decode = curr_mani[test_idx].copy()
+    data_to_fit = current_manifold[train_idx].copy()
+    data_to_decode = current_manifold[test_idx].copy()
 
     curr_fit_result = mff.fit_manifold(data_to_fit, curr_fit_params)
     dec_angle, mse = mff.decode_from_passed_fit(data_to_decode, curr_fit_result['tt'][:-1], 

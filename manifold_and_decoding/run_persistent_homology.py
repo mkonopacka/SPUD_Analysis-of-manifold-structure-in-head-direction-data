@@ -1,9 +1,7 @@
 '''April 18th 2019
 Use Ripser to get Betti bar codes from saved rates. If nCells > 10, dim reduce 
-spike counts using Isomap. Threshold out low density points if thrsh is True.
+spike counts using Isomap. Threshold out low density points if thresholded is True.
 '''
-
-
 import sys, os
 import time, datetime
 import numpy as np
@@ -15,12 +13,12 @@ sd=int((time.time()%1)*(2**31))
 np.random.seed(sd)
 curr_date=datetime.datetime.now().strftime('%Y_%m_%d')+'_'
 
-gen_fn_dir = os.path.abspath('..') + '/shared_scripts'
+gen_fn_dir = os.path.abspath('.') + '/shared_scripts'
 sys.path.append(gen_fn_dir)
 
 import general_file_fns as gff
 
-gen_params = gff.load_pickle_file('../general_params/general_params.p')
+gen_params = gff.load_pickle_file('./general_params/general_params.pkl')
 
 from binned_spikes_class import spike_counts
 from dim_red_fns import run_dim_red
@@ -31,16 +29,15 @@ save_dir = gff.return_dir(gen_params['results_dir'] + '2019_03_22_tda/')
 
 plot_barcode = True
 cmd_line = False
-# if thrsh is True then we threshold out low density points (nt-TDA in the 
-# paper)
+# if thresholded is True then we threshold out low density points (nt-TDA in the paper)
 if cmd_line:
     session = sys.argv[1]
     state = sys.argv[2]
-    thrsh = sys.argv[3]  # threshold out low density pts
+    thresholded = sys.argv[3]  # threshold out low density pts
 else:
     session = 'Mouse28-140313'
     state = 'Wake'
-    thrsh = False
+    thresholded = False
 
 area = 'ADn'
 dt_kernel = 0.1
@@ -53,13 +50,14 @@ print(('Session: %s, state: %s' % (session, state)))
 session_rates = spike_counts(session, rate_params, count_type='rate',
                              anat_region='ADn')
 rates_all = session_rates.get_spike_matrix(state)[0]
+
 nCells_tot = rates_all.shape[1]
 n_smooth_samples = np.floor(len(rates_all) / d_idx).astype(int)
-sm_rates = np.zeros((n_smooth_samples, nCells_tot))
+smooth_rates = np.zeros((n_smooth_samples, nCells_tot))
 for i in range(n_smooth_samples):
     si = i * d_idx
     ei = (i + 1) * d_idx
-    sm_rates[i] = np.mean(rates_all[si:ei], axis=0)
+    smooth_rates[i] = np.mean(rates_all[si:ei], axis=0)
 
 results = {'session': session, 'h0': [], 'h1': [], 'h2': []}
 
@@ -69,12 +67,12 @@ dr_method = 'iso'
 n_neighbors = 5
 dim_red_params = {'n_neighbors': n_neighbors, 'target_dim': fit_dim}
 if nCells_tot > 10:
-    rates = run_dim_red(sm_rates, params=dim_red_params, method=dr_method)
+    rates = run_dim_red(smooth_rates, params=dim_red_params, method=dr_method)
 else:
-    rates = sm_rates
+    rates = smooth_rates
 
 # threshold out outlier points with low neighborhood density
-if thrsh:
+if thresholded:
     # a) find number of neighbors of each point within radius of 1st percentile of all
     # pairwise dist.
     dist = pdist(rates, 'euclidean')
@@ -85,10 +83,10 @@ if thrsh:
                         return_distance=False))))
 
     # b) threshold out points with low density
-    thrsh_prcnt = 20
-    threshold = np.percentile(num_nbrs, thrsh_prcnt)
-    thrsh_rates = rates[num_nbrs > threshold]
-    rates = thrsh_rates
+    thresholded_prcnt = 20
+    threshold = np.percentile(num_nbrs, thresholded_prcnt)
+    thresholded_rates = rates[num_nbrs > threshold]
+    rates = thresholded_rates
 
 # H0 & H1
 H1_rates = rates
@@ -107,7 +105,7 @@ barcodes = tda(H2_rates, maxdim=2, coeff=2)['dgms']
 results['h2'] = barcodes[2]
 
 # save
-gff.save_pickle_file(results, save_dir + '%s_%s%s_ph_barcodes.p' % (session, state, ('_thresholded' * thrsh)))
+gff.save_pickle_file(results, save_dir + '%s_%s%s_ph_barcodes.p' % (session, state, ('_thresholded' * thresholded)))
 
 # If plotting from a saved file, uncomment this and replace with appropriate file.
 # results = gff.load_pickle_file(gen_params['results_dir'] + '2019_03_22_tda/Mouse28-140313_Wake_ph_barcodes.p')
