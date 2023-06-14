@@ -46,6 +46,8 @@ adequate tracking was not possible for these frames.
 4. Split run_spud_multiple_tests.py into two jupyter notebooks
 5. Converted `run_persistent_homology.py` into a notebook and added a new persistence diagram.
 6. Changed sampling method to the one implemented by ripser.py authors ("furthest point sampling")
+7. Examined outputs of ripser function to understand what it returns and how the results can be used
+8. Analyzed how barcodes are plotted
 
 ## What each script / file does:
 - `general_params/`:
