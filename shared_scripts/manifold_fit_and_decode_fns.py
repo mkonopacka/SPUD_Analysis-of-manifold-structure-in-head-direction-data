@@ -1,10 +1,7 @@
 '''
 March 22nd 2019
-Functions to fit a 1D piecewise linear spline to a pointcloud and use
-it to do decoding.
+Functions to fit a 1D piecewise linear spline to a pointcloud and use it to do decoding.
 '''
-
-
 import numpy as np
 import numpy.linalg as la
 from pandas import cut
@@ -16,8 +13,7 @@ import angle_fns as af
 import fit_helper_fns as fhf
 
 class PiecewiseLinearFit:
-    '''Fits a piecewise linear curve to passed data. The curve runs through
-    a series of knots.'''
+    '''Fits a piecewise linear curve to passed data. The curve runs through a series of knots.'''
 
     def __init__(self, data_to_fit, params):
         self.data_to_fit = data_to_fit
@@ -38,7 +34,7 @@ class PiecewiseLinearFit:
             kmeans = KMeans(n_clusters=self.nKnots, max_iter=300).fit(self.data_to_fit)
             return kmeans.cluster_centers_
         else:
-            print('Unknown method')
+            raise NotImplementedError('Unknown method')
 
     def order_knots(self, knots, method='nearest'):
         '''Order the initial knots so that we can draw a curve through them. 
@@ -149,16 +145,25 @@ class PiecewiseLinearFit:
         return np.sum(ls_lens)
 
 
-def fit_manifold(data_to_fit, fit_params):
-    '''fit_params takes nKnots : number of knots, dalpha : resolution for
-    sampled curve, knot_order : method to initially order knots, penalty_type : 
-    penalty'''
+def fit_manifold(data_to_fit: np.ndarray, fit_params: dict) -> dict:
+    '''Fit manifold.
+    
+    Arguments:
+        data_to_fit: np.array of shape ...
+        fit_parms:
+            nKnots : number of knots, 
+            dalpha : resolution for sampled curve, 
+            knot_order : method to initially order knots, 
+            penalty_type : penalty
+    
+    Returns:
+        ...
+    '''
     # fit_params is a superset of the initial params that PiecewiseLinearFit needs
     fitter =  PiecewiseLinearFit(data_to_fit, fit_params)
     unord_knots = fitter.get_new_initial_knots()
     init_knots = fitter.order_knots(unord_knots, method=fit_params['knot_order'])
-    curr_fit_params = {'init_knots' : init_knots, 'penalty_type' : 
-        fit_params['penalty_type']}
+    curr_fit_params = {'init_knots' : init_knots, 'penalty_type' : fit_params['penalty_type']}
     fitter.fit_data(curr_fit_params)
     fit_results = dict(fit_params)
     fit_results['init_knots'] = init_knots
@@ -167,8 +172,7 @@ def fit_manifold(data_to_fit, fit_params):
     fit_results['final_knots'] = fitter.saved_knots[0]['knots']
     fit_results['fit_err'] = fitter.saved_knots[0]['err']
     fit_results['loop_final_knots'] = fhf.loop_knots(fitter.saved_knots[0]['knots'])
-    fit_results['tt'], fit_results['curve'] = fhf.get_curve_from_knots(
-        fit_results['loop_final_knots'], 'eq_vel')
+    fit_results['tt'], fit_results['curve'] = fhf.get_curve_from_knots(fit_results['loop_final_knots'], 'eq_vel')
     return fit_results
 
 def decode_from_passed_fit(data_to_decode, fit_coords, fit_curve, ref_angles):
