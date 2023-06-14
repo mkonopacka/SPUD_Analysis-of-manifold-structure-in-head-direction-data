@@ -43,7 +43,9 @@ adequate tracking was not possible for these frames.
 1. Converted all scripts for use with python3
 2. Did setup described in README (params, processing of raw data)
 3. Read an article about spike sorting (part of data preprocessing)
-4. ... run_spud_multiple_tests.py
+4. Split run_spud_multiple_tests.py into two jupyter notebooks
+5. Converted `run_persistent_homology.py` into a notebook and added a new persistence diagram.
+6. Changed sampling method to the one implemented by ripser.py authors ("furthest point sampling")
 
 ## What each script / file does:
 - `general_params/`:
@@ -73,3 +75,5 @@ adequate tracking was not possible for these frames.
 ## Order of execution - what are the steps of the workflow
 1. raw data is converted to pickle files containing processed data
 2. Isomap dimensionality reduction is performed on processed data - now we have points in 3D space(?)
+
+TODO
