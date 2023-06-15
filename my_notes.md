@@ -76,6 +76,6 @@ adequate tracking was not possible for these frames.
 
 ## Order of execution - what are the steps of the workflow
 1. raw data is converted to pickle files containing processed data
-2. Isomap dimensionality reduction is performed on processed data - now we have points in 3D space(?)
-
-TODO
+2. Betti numbers are computed for data cloud
+3. Isomap dimensionality reduction is performed on processed data - now we have points in 3D space
+4. SPUD
